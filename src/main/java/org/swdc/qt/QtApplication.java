@@ -1,5 +1,6 @@
 package org.swdc.qt;
 
+import io.qt.core.QObject;
 import io.qt.gui.QIcon;
 import io.qt.gui.QImage;
 import io.qt.gui.QPixmap;
@@ -15,6 +16,7 @@ import org.swdc.dependency.utils.AnnotationDescription;
 import org.swdc.dependency.utils.AnnotationUtil;
 import org.swdc.qt.config.ApplicationConfigure;
 import org.swdc.qt.utils.IOApplicationUtils;
+import org.swdc.qt.utils.QtThreadPoolExecutor;
 
 import java.io.File;
 import java.io.InputStream;
@@ -35,11 +37,12 @@ import java.util.zip.ZipInputStream;
 
 public class QtApplication implements SWApplication {
 
+
     private DependencyContext context = null;
     private QtResource resource = new QtResource();
     private boolean isNativeInitialized = false;
 
-    private ThreadPoolExecutor executor;
+    private QtThreadPoolExecutor executor;
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -59,7 +62,6 @@ public class QtApplication implements SWApplication {
 
         logger.info("application is initializing...");
 
-        this.executor =  new ThreadPoolExecutor(4,12,30, TimeUnit.MINUTES,new LinkedBlockingQueue<>());
         this.onConfig(loader);
     }
 
@@ -204,6 +206,9 @@ public class QtApplication implements SWApplication {
         QApplication.initialize(args);
         isNativeInitialized = true;
 
+        this.executor =  new QtThreadPoolExecutor();
+        resource.setExecutor(executor);
+
         String[] icons = appDesc.getProperty(String[].class, "icons");
         QIcon theIcon = new QIcon();
         for (String icon : icons) {
@@ -232,7 +237,6 @@ public class QtApplication implements SWApplication {
         resource.setAssetFolder(file);
         resource.setAppIcon(theIcon);
         resource.setArgs(Arrays.asList(args));
-        resource.setExecutor(executor);
 
         loader.withInstance(QtResource.class,resource);
         loader.withInstance(ExecutorService.class,executor);

@@ -14,6 +14,7 @@ module swdc.application.qt {
     exports org.swdc.qt.view;
     exports org.swdc.qt.config;
     exports org.swdc.qt.font;
+    exports org.swdc.qt.utils;
 
     opens org.swdc.qt.config to
             swdc.application.configs;

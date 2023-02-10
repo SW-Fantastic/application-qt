@@ -3,6 +3,7 @@ package org.swdc.qt.view;
 import com.asual.lesscss.LessEngine;
 import io.qt.core.QList;
 import io.qt.gui.QFontDatabase;
+import io.qt.widgets.QWidget;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,7 +88,7 @@ public class Theme {
      * 给view添加样式
      * @param view
      */
-    public void applyWithView(QtView view) {
+    public void applyWithView(AbstractQtView view) {
         if (!this.ready) {
             this.prepare();
         }
@@ -103,7 +104,7 @@ public class Theme {
                     .resolve("stage.css")
                     .toAbsolutePath();
             byte[] data = Files.readAllBytes(defaultStyle);
-            view.setStyleSheet(new String(data, StandardCharsets.UTF_8));
+            ((QWidget)view).setStyleSheet(new String(data, StandardCharsets.UTF_8));
         } catch (Exception e){
             throw new RuntimeException("渲染出现异常：",e);
         }

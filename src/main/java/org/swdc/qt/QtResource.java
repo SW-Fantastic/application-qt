@@ -1,17 +1,18 @@
 package org.swdc.qt;
 
+import io.qt.core.QThread;
 import io.qt.gui.QIcon;
 import org.swdc.qt.config.ApplicationConfigure;
+import org.swdc.qt.utils.QtThreadPoolExecutor;
 
 import java.io.File;
 import java.util.List;
-import java.util.concurrent.ThreadPoolExecutor;
 
 public class QtResource {
 
     private File assetFolder;
 
-    private ThreadPoolExecutor executor;
+    private QtThreadPoolExecutor executor;
 
     private QIcon appIcon;
 
@@ -39,7 +40,7 @@ public class QtResource {
         this.assetFolder = assetFolder;
     }
 
-    public void setExecutor(ThreadPoolExecutor executor) {
+    public void setExecutor(QtThreadPoolExecutor executor) {
         this.executor = executor;
     }
 
@@ -47,7 +48,7 @@ public class QtResource {
         return assetFolder;
     }
 
-    public ThreadPoolExecutor getExecutor() {
+    public QtThreadPoolExecutor getExecutor() {
         return executor;
     }
 
@@ -58,4 +59,6 @@ public class QtResource {
     public List<String> getArgs() {
         return args;
     }
+
+
 }

@@ -1,6 +1,8 @@
 package org.swdc.qt.view;
 
 import io.qt.core.QBuffer;
+import io.qt.widgets.QApplication;
+import io.qt.widgets.QWidget;
 import org.swdc.dependency.AbstractDependencyScope;
 import org.swdc.qt.QtResource;
 import org.swdc.qt.config.ApplicationConfigure;
@@ -12,15 +14,6 @@ public class QtViewManager extends AbstractDependencyScope {
 
     private ConcurrentHashMap<String,QBuffer> loadedViewResourced = new ConcurrentHashMap<>();
 
-    @Override
-    public <T> T getByClass(Class<T> clazz) {
-        QView view = clazz.getAnnotation(QView.class);
-        if (view.multiple()) {
-            throw new RuntimeException("你正在尝试注入非单例的View，请使用别名注入或者使用批量注入。");
-        } else {
-            return super.getByClass(clazz);
-        }
-    }
 
     @Override
     public Class getScopeType() {
@@ -29,7 +22,7 @@ public class QtViewManager extends AbstractDependencyScope {
 
     @Override
     public <T> T put(String name, Class clazz, T component) {
-        if (!QtView.class.isAssignableFrom(clazz)) {
+        if (!AbstractQtView.class.isAssignableFrom(clazz)) {
             throw new RuntimeException("Qt的View必须要继承QtView，并且使用QView注解标注。");
         }
         QView view = (QView) clazz.getAnnotation(QView.class);
@@ -54,20 +47,30 @@ public class QtViewManager extends AbstractDependencyScope {
         QtResource resource = context.getByClass(QtResource.class);
         ApplicationConfigure configure = context.getByClass(resource.getConfigureClass());
 
-        QtView instance = (QtView) component;
+        QApplication.setWindowIcon(resource.getAppIcon());
+
+        AbstractQtView instance = (AbstractQtView) component;
         instance.initView(buffer);
         if (view.stage()) {
-            instance.setMinimumSize(view.width(),view.height());
-            instance.setWindowTitle(view.title());
-            instance.setWindowModality(view.modalType());
-            instance.setWindowIcon(resource.getAppIcon());
+            QWidget widget = (QWidget)instance;
+            widget.setMinimumSize(view.width(),view.height());
+            widget.setWindowTitle(view.title());
+            widget.setWindowModality(view.modalType());
+            widget.setWindowIcon(resource.getAppIcon());
             Theme theme = Theme.getTheme(configure.getTheme(),resource.getAssetFolder());
             theme.applyWithView(instance);
+            if (!view.resizeable()) {
+                widget.setMaximumSize(view.width(),view.height());
+            }
         }
         if (view.controller() != Object.class) {
             instance.setController(context.getByClass(view.controller()));
         }
-        return (T) super.put(name,clazz,instance);
+        instance.setContext(context);
+        if (!view.multiple()) {
+            return (T) super.put(name,clazz,instance);
+        }
+        return (T)instance;
     }
 
 }

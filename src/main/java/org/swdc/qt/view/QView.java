@@ -31,4 +31,6 @@ public @interface QView {
 
     int height() default 600;
 
+    boolean resizeable() default true;
+
 }
