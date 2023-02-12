@@ -42,13 +42,17 @@ public class QtThreadPoolExecutor extends AbstractExecutorService {
 
     @Override
     public void shutdown() {
-        threadPool.waitForDone();
-        threadPool.dispose();
+        if (!threadPool.isDisposed()) {
+            threadPool.waitForDone();
+            threadPool.dispose();
+        }
     }
 
     @Override
     public List<Runnable> shutdownNow() {
-        threadPool.dispose();
+        if (!threadPool.isDisposed()) {
+            threadPool.dispose();
+        }
         return Collections.emptyList();
     }
 
@@ -64,6 +68,9 @@ public class QtThreadPoolExecutor extends AbstractExecutorService {
 
     @Override
     public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
+        if (threadPool.isDisposed()) {
+            return true;
+        }
         return threadPool.waitForDone((int)unit.toMillis(timeout));
     }
 

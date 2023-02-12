@@ -2,6 +2,7 @@ package org.swdc.qt.view;
 
 import io.qt.core.QBuffer;
 import io.qt.core.QObject;
+import io.qt.gui.QPalette;
 import io.qt.gui.QResizeEvent;
 import io.qt.widgets.QDialog;
 import io.qt.widgets.QWidget;
@@ -15,6 +16,7 @@ public class QtDialogView extends QDialog implements AbstractQtView {
     private QUiLoader loader;
 
     private QWidget root;
+    private QPalette themePalette;
 
     @Override
     public void initView(QBuffer data) {
@@ -23,6 +25,11 @@ public class QtDialogView extends QDialog implements AbstractQtView {
             loader = new QUiLoader();
             root = loader.load(data,this);
         }
+    }
+
+    @Override
+    public void setThemePalette(QPalette themePalette) {
+        this.themePalette = themePalette;
     }
 
     @Override
@@ -58,5 +65,9 @@ public class QtDialogView extends QDialog implements AbstractQtView {
         }
         this.controller = controller;
         initializeController(controller);
+    }
+
+    public <T> T getController() {
+        return (T)controller;
     }
 }

@@ -290,7 +290,7 @@ public class QtApplication implements SWApplication {
         logger.info("application is started.");
 
         QApplication.setWindowIcon(resource.getAppIcon());
-        QApplication.instance().aboutToQuit.connect(() -> this.stop(true));
+        QApplication.instance().aboutToQuit.connect(() -> this.stop(false));
 
         this.onStarted(context);
         QApplication.exec();

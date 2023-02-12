@@ -2,6 +2,12 @@ package org.swdc.qt.view;
 
 import io.qt.core.QMetaObject;
 import io.qt.core.QObject;
+import io.qt.core.Qt;
+import org.swdc.dependency.utils.ReflectionUtil;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.util.List;
 
 public interface SignalSupport {
 
@@ -18,6 +24,35 @@ public interface SignalSupport {
             throw new RuntimeException("emit must be calling on a QObject, please extends the QObject class.");
         }
         QMetaObject.invokeMethod((QObject)this,methodName,params);
+    }
+
+    default String slotMethod(Method method) {
+        StringBuilder sig = new StringBuilder(method.getName()).append("(");
+        for (int idx = 0; idx < method.getParameters().length; idx++) {
+            Parameter param = method.getParameters()[idx];
+            String typeName = param.getType().getName();
+            sig.append(typeName).append(" ");
+            if (idx + 1 < method.getParameters().length) {
+                sig.append(",");
+            }
+        }
+        sig.append(")");
+        return sig.toString();
+    }
+
+    default String slotMethod(Object receiver, String methodName) {
+        List<Method> methods = ReflectionUtil.findAllMethods(receiver.getClass());
+        for(Method method: methods) {
+            if (method.getName().equals(methodName)) {
+                return slotMethod(method);
+            }
+        }
+        throw new RuntimeException("no such method on class " + receiver.getClass().getName() + "#" + methodName);
+    }
+
+    default void signalConnect(Object receiver,QMetaObject.AbstractSignal signal, String slot, Qt.ConnectionType connectionType) {
+        String methodSig = slotMethod(receiver,slot);
+        signal.connect(receiver,methodSig,connectionType);
     }
 
 }

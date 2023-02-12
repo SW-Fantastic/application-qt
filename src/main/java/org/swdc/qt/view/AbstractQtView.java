@@ -4,6 +4,7 @@ import io.qt.core.QBuffer;
 import io.qt.core.QMetaObject;
 import io.qt.core.QObject;
 import io.qt.core.Qt;
+import io.qt.gui.QPalette;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.swdc.dependency.DependencyContext;
@@ -23,6 +24,8 @@ public interface AbstractQtView extends SignalSupport {
     void initView(QBuffer data);
 
     void setContext(DependencyContext context);
+
+    void setThemePalette(QPalette palette);
 
     default void initializeController(Object controller) {
         List<Method> methods = ReflectionUtil.findAllMethods(controller.getClass());
@@ -48,19 +51,8 @@ public interface AbstractQtView extends SignalSupport {
                     throw new RuntimeException("the signal-name : " + signalName + " is invalid.");
                 }
 
-                StringBuilder sig = new StringBuilder(method.getName()).append("(");
-                for (int idx = 0; idx < method.getParameters().length; idx++) {
-                    Parameter param = method.getParameters()[idx];
-                    String typeName = param.getType().getName();
-                    sig.append(typeName).append(" ");
-                    if (idx + 1 < method.getParameters().length) {
-                        sig.append(",");
-                    }
-                }
-                sig.append(")");
-
                 QMetaObject.AbstractSignal signal = (QMetaObject.AbstractSignal) signalField.get(widget);
-                signal.connect(controller,sig.toString(),connectionType);
+                signal.connect(controller,slotMethod(method),connectionType);
             } catch (Exception e) {
                 logger.error("failed to connect slot-method :" + method.getName() + " to widget: " + widgetName + ", error read signal field.",e);
             }
@@ -95,4 +87,25 @@ public interface AbstractQtView extends SignalSupport {
     <T extends QObject> T findByName(String name);
 
     void setController(Object controller);
+
+    <T> T getController();
+
+    default void signalConnect(QMetaObject.AbstractSignal signal, String slot) {
+        signalConnect(
+                getController() == null ? this : getController(),
+                signal,
+                slot,
+                Qt.ConnectionType.AutoConnection
+        );
+    }
+
+    default void signalConnect(QMetaObject.AbstractSignal signal, String slot, Qt.ConnectionType type) {
+        signalConnect(
+                getController() == null ? this : getController(),
+                signal,
+                slot,
+                type
+        );
+    }
+
 }

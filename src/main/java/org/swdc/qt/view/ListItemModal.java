@@ -73,8 +73,38 @@ public class ListItemModal<T> extends QAbstractListModel {
         return items.size();
     }
 
-    public List<T> getItems() {
-        return items;
+    public void add(T t) {
+        this.beginInsertRows(null,items.size() - 1,items.size() - 1);
+        items.add(t);
+        this.endInsertRows();
+    }
+
+    public void remove(T t) {
+        int index = items.indexOf(t);
+        if (index < 0) {
+            return;
+        }
+        this.beginRemoveRows(null,index,index);
+        items.remove(t);
+        this.endRemoveRows();
+    }
+
+    public void addAll(Collection<T> ts) {
+        for (T t: ts) {
+            this.add(t);
+        }
+    }
+
+    public void removeAll(Collection<T> ts) {
+        for (T t: ts) {
+            this.remove(t);
+        }
+    }
+
+    public void clear() {
+        this.beginResetModel();
+        items.clear();
+        this.endResetModel();
     }
 
 }

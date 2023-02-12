@@ -57,16 +57,19 @@ public class QtViewManager extends AbstractDependencyScope {
             widget.setWindowTitle(view.title());
             widget.setWindowModality(view.modalType());
             widget.setWindowIcon(resource.getAppIcon());
-            Theme theme = Theme.getTheme(configure.getTheme(),resource.getAssetFolder());
-            theme.applyWithView(instance);
             if (!view.resizeable()) {
                 widget.setMaximumSize(view.width(),view.height());
             }
         }
+        Theme theme = Theme.getTheme(configure.getTheme(),resource.getAssetFolder());
+        theme.applyWithView(instance);
+        instance.setContext(context);
+        instance.setThemePalette(theme.getPalette());
+
         if (view.controller() != Object.class) {
             instance.setController(context.getByClass(view.controller()));
         }
-        instance.setContext(context);
+
         if (!view.multiple()) {
             return (T) super.put(name,clazz,instance);
         }
