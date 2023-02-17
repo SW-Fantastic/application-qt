@@ -67,6 +67,10 @@ public class QtDialogView extends QDialog implements AbstractQtView {
         initializeController(controller);
     }
 
+    public QPalette getThemePalette() {
+        return themePalette;
+    }
+
     public <T> T getController() {
         return (T)controller;
     }

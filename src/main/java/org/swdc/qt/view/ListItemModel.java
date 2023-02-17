@@ -14,15 +14,15 @@ import java.util.*;
  * 对Qt的ListModal进行包装，提供方便使用的Java类型。
  * @param <T>
  */
-public class ListItemModal<T> extends QAbstractListModel {
+public class ListItemModel<T> extends QAbstractListModel {
 
-    private Logger logger = LoggerFactory.getLogger(ListItemModal.class);
+    private Logger logger = LoggerFactory.getLogger(ListItemModel.class);
     private List<T> items = new ArrayList<>();
 
     private Map<Integer,Field> roleFieldMap = new HashMap<>();
     private QSize cellSize = null;
 
-    public ListItemModal(Class<T> itemType) {
+    public ListItemModel(Class<T> itemType) {
         List<Field> propertyFields = ReflectionUtil.findFieldsByAnnotation(itemType, QtModelProperty.class);
         for (Field field : propertyFields) {
             field.setAccessible(true);
