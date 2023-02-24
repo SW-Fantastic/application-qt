@@ -11,6 +11,7 @@ import org.swdc.config.AbstractConfig;
 import org.swdc.dependency.AnnotationLoader;
 import org.swdc.dependency.DependencyContext;
 import org.swdc.dependency.EnvironmentLoader;
+import org.swdc.dependency.LoggerProvider;
 import org.swdc.dependency.application.SWApplication;
 import org.swdc.dependency.utils.AnnotationDescription;
 import org.swdc.dependency.utils.AnnotationUtil;
@@ -240,6 +241,7 @@ public class QtApplication implements SWApplication {
 
         loader.withInstance(QtResource.class,resource);
         loader.withInstance(ExecutorService.class,executor);
+        loader.withProvider(LoggerProvider.class);
 
         logger.info("resource has loaded.");
     }

@@ -1,11 +1,13 @@
 package org.swdc.qt.view;
 
 import io.qt.core.*;
+import io.qt.gui.QPainter;
+import io.qt.gui.QPalette;
+import io.qt.widgets.QStyle;
+import io.qt.widgets.QStyleOptionViewItem;
+import io.qt.widgets.QStyledItemDelegate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.swdc.dependency.utils.AnnotationDescription;
-import org.swdc.dependency.utils.AnnotationUtil;
-import org.swdc.dependency.utils.ReflectionUtil;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -19,21 +21,23 @@ public class ListItemModel<T> extends QAbstractListModel {
     private Logger logger = LoggerFactory.getLogger(ListItemModel.class);
     private List<T> items = new ArrayList<>();
 
-    private Map<Integer,Field> roleFieldMap = new HashMap<>();
     private QSize cellSize = null;
+    private Field theDisplay = null;
 
-    public ListItemModel(Class<T> itemType) {
-        List<Field> propertyFields = ReflectionUtil.findFieldsByAnnotation(itemType, QtModelProperty.class);
-        for (Field field : propertyFields) {
-            field.setAccessible(true);
-            AnnotationDescription desc = AnnotationUtil.findAnnotation(field, QtModelProperty.class);
-            int role = desc.getProperty(int.class,"itemDataRole");
-            if (!roleFieldMap.containsKey(role)) {
-                roleFieldMap.put(role,field);
-            } else {
-                logger.warn("duplicated item data role:" + field.getName());
+    public ListItemModel(Class<T> itemType,String propertyField) {
+        if (propertyField != null) {
+            try{
+                theDisplay = itemType.getDeclaredField(propertyField);
+                theDisplay.setAccessible(true);
+            } catch (Exception e) {
+                logger.error("failed to read field on type: " + itemType.getName(),e);
             }
         }
+    }
+
+    @Override
+    public Object headerData(int section, Qt.Orientation orientation, int role) {
+        return super.headerData(section, orientation, role);
     }
 
     public void setCellSize(QSize cellSize) {
@@ -47,14 +51,12 @@ public class ListItemModel<T> extends QAbstractListModel {
     @Override
     public Object data(QModelIndex index, int role) {
         try {
-            if (roleFieldMap.size() == 0 && items.size() > index.row()) {
+            if (theDisplay == null && index.row() < items.size()) {
                 return new QVariant(items.get(index.row()));
-            } else if (roleFieldMap.containsKey(role) && items.size() > index.row()) {
-                Field field = roleFieldMap.get(role);
-                T object = items.get(index.row());
-                return new QVariant(field.get(object));
             } else if (role == Qt.ItemDataRole.SizeHintRole && cellSize != null) {
                 return new QVariant(cellSize);
+            } else if (index.row() < items.size() && role == Qt.ItemDataRole.DisplayRole){
+                return new QVariant(theDisplay.get(items.get(index.row())));
             }
             return new QVariant();
         } catch (Exception e) {
@@ -105,6 +107,14 @@ public class ListItemModel<T> extends QAbstractListModel {
         this.beginResetModel();
         items.clear();
         this.endResetModel();
+    }
+
+    public T get(int idx) {
+        return items.get(idx);
+    }
+
+    public List<T> items() {
+        return Collections.unmodifiableList(items);
     }
 
 }

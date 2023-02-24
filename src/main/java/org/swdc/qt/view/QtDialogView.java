@@ -8,6 +8,8 @@ import io.qt.widgets.QDialog;
 import io.qt.widgets.QWidget;
 import io.qt.widgets.tools.QUiLoader;
 import org.swdc.dependency.DependencyContext;
+import org.swdc.dependency.event.AbstractEvent;
+import org.swdc.dependency.event.Events;
 
 public class QtDialogView extends QDialog implements AbstractQtView {
 
@@ -17,6 +19,7 @@ public class QtDialogView extends QDialog implements AbstractQtView {
 
     private QWidget root;
     private QPalette themePalette;
+    private Events events;
 
     @Override
     public void initView(QBuffer data) {
@@ -71,7 +74,18 @@ public class QtDialogView extends QDialog implements AbstractQtView {
         return themePalette;
     }
 
+
     public <T> T getController() {
         return (T)controller;
+    }
+
+    @Override
+    public <T extends AbstractEvent> void emit(T event) {
+        events.dispatch(event);
+    }
+
+    @Override
+    public void setEvents(Events events) {
+        this.events = events;
     }
 }

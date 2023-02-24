@@ -8,6 +8,8 @@ import io.qt.gui.QPalette;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.swdc.dependency.DependencyContext;
+import org.swdc.dependency.EventEmitter;
+import org.swdc.dependency.event.Events;
 import org.swdc.dependency.utils.AnnotationDescription;
 import org.swdc.dependency.utils.AnnotationUtil;
 import org.swdc.dependency.utils.ReflectionUtil;
@@ -17,7 +19,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.List;
 
-public interface AbstractQtView extends SignalSupport {
+public interface AbstractQtView extends SignalSupport, EventEmitter {
 
     Logger logger = LoggerFactory.getLogger(AbstractQtView.class);
 

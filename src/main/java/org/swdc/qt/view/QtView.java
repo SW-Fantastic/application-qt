@@ -8,6 +8,8 @@ import io.qt.gui.QResizeEvent;
 import io.qt.widgets.QWidget;
 import io.qt.widgets.tools.QUiLoader;
 import org.swdc.dependency.DependencyContext;
+import org.swdc.dependency.event.AbstractEvent;
+import org.swdc.dependency.event.Events;
 
 public abstract class QtView extends QWidget implements AbstractQtView {
 
@@ -18,6 +20,7 @@ public abstract class QtView extends QWidget implements AbstractQtView {
     private QWidget root;
 
     private QPalette themePalette;
+    private Events events;
 
     public void setContext(DependencyContext context) {
         this.context = context;
@@ -71,5 +74,15 @@ public abstract class QtView extends QWidget implements AbstractQtView {
 
     public <T> T getController() {
         return (T)controller;
+    }
+
+    @Override
+    public <T extends AbstractEvent> void emit(T event) {
+        events.dispatch(event);
+    }
+
+    @Override
+    public void setEvents(Events events) {
+        this.events = events;
     }
 }
