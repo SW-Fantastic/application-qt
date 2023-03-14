@@ -89,7 +89,11 @@ public class QtThreadPoolExecutor extends AbstractExecutorService {
     @Override
     protected <T> RunnableFuture<T> newTaskFor(Runnable runnable, T value) {
         return new QtFuture<>(() -> {
-            runnable.run();
+            try {
+                runnable.run();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             return value;
         });
     }
