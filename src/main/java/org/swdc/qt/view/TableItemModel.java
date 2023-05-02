@@ -121,7 +121,7 @@ public class TableItemModel<T> extends QAbstractTableModel {
         try {
             Field propField = itemType.getDeclaredField(propertyName);
             propField.setAccessible(true);
-            beginInsertColumns(null,namedFieldMap.size() - 1,namedFieldMap.size() - 1);
+            beginInsertColumns(null,namedFieldMap.size() == 0 ? 0 : namedFieldMap.size() - 1,namedFieldMap.size() == 0 ? 0 : namedFieldMap.size() - 1);
             ColumnItem item = new ColumnItem();
             item.setField(propField);
             item.setName(columnName);
@@ -185,7 +185,7 @@ public class TableItemModel<T> extends QAbstractTableModel {
     }
 
     public void add(T t) {
-        this.beginInsertRows(null,items.size() - 1,items.size() - 1);
+        this.beginInsertRows(null,items.size() == 0 ? 0 : items.size() - 1,items.size() == 0 ? 0 : items.size() - 1);
         items.add(t);
         this.endInsertRows();
     }

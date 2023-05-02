@@ -78,7 +78,7 @@ public class ListItemModel<T> extends QAbstractListModel {
     }
 
     public void add(T t) {
-        this.beginInsertRows(null,items.size() - 1,items.size() - 1);
+        this.beginInsertRows(null,items.size() == 0 ? 0 : items.size() - 1,items.size());
         items.add(t);
         this.endInsertRows();
     }

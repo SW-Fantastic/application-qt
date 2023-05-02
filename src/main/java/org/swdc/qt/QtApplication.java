@@ -86,7 +86,11 @@ public class QtApplication implements SWApplication {
 
         File nativeFolder = new File(nativePath);
         if (!nativeFolder.exists()) {
-            nativeFolder = nativeFolder.getParentFile();
+
+            if(!nativeFolder.mkdirs()) {
+                throw new RuntimeException("can not create platform folder, start failed.");
+            }
+
             String resourceName = "platforms/";
 
             logger.info("no qt library found, will extract from resource.");
@@ -103,7 +107,7 @@ public class QtApplication implements SWApplication {
                 osArch = "x64";
             }
             //resourceName = resourceName + "-" + osArch + ".zip";
-            for (String libs: Arrays.asList("QtCore","QtLibCore")) {
+            for (String libs: Arrays.asList("QtCore","QtMultimedia","QtPlugins","QtLibCore","QtLibExt")) {
                 doExtractZip(nativeFolder,resourceName + "/" + libs + "-" + osArch + ".zip");
             }
         }
@@ -144,7 +148,6 @@ public class QtApplication implements SWApplication {
         } catch (Exception e) {
             logger.error("error on extracting native library",e);
             this.stop(true);
-            return;
         }
     }
 
