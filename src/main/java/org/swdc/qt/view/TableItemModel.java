@@ -1,5 +1,6 @@
 package org.swdc.qt.view;
 
+import io.qt.NonNull;
 import io.qt.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,11 +10,14 @@ import org.swdc.dependency.utils.ReflectionUtil;
 
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 public class TableItemModel<T> extends QAbstractTableModel {
 
     static class ColumnItem {
+
+        private Qt.ItemFlags flags;
 
         private String name;
         private Field field;
@@ -60,9 +64,17 @@ public class TableItemModel<T> extends QAbstractTableModel {
         public void setField(Field field) {
             this.field = field;
         }
+
+        public void setFlags(Qt.ItemFlag ...flags) {
+            if (flags != null && flags.length > 0) {
+                this.flags = Qt.ItemFlag.flags(flags);
+            }
+        }
+
     }
 
     private Map<String,ColumnItem> namedFieldMap = new HashMap<>();
+    private Map<String,ItemEditedListener<T>> namedListenerMap = new HashMap<>();
     private List<String> properties = new ArrayList<>();
 
 
@@ -105,19 +117,27 @@ public class TableItemModel<T> extends QAbstractTableModel {
     }
 
     public void addColumn(String propertyName, String columnName, double width) {
-        addColumn(propertyName,columnName,width,null,new Qt.Alignment(Qt.AlignmentFlag.AlignCenter));
+        addColumn(propertyName,columnName,width,null,new Qt.Alignment(Qt.AlignmentFlag.AlignCenter),new Qt.ItemFlag[0]);
     }
 
     public void addColumn(String propertyName, String columnName, double width, Qt.Alignment alignment) {
-        addColumn(propertyName,columnName,width,null,alignment);
+        addColumn(propertyName,columnName,width,null,alignment,new Qt.ItemFlag[0]);
     }
 
 
     public void addColumn(String propertyName, String columnName, double width,Function<Object,String> func) {
-        addColumn(propertyName,columnName,width,func,new Qt.Alignment(Qt.AlignmentFlag.AlignCenter));
+        addColumn(propertyName,columnName,width,func,new Qt.Alignment(Qt.AlignmentFlag.AlignCenter),new Qt.ItemFlag[0]);
     }
 
-    public void addColumn(String propertyName, String columnName, double width, Function<Object,String> getter, Qt.Alignment alignment) {
+    public void addColumn(String propertyName,String columnName, double width, Function<Object,String> getter, Qt.Alignment alignment) {
+        addColumn(propertyName,columnName,width,getter,alignment,new Qt.ItemFlag[0]);
+    }
+
+    public void addColumn(String propertyName, String columnName, double width, Qt.ItemFlag ...flags) {
+        addColumn(propertyName,columnName,width,null,new Qt.Alignment(Qt.AlignmentFlag.AlignCenter),flags);
+    }
+
+    public void addColumn(String propertyName, String columnName, double width, Function<Object,String> getter, Qt.Alignment alignment,Qt.ItemFlag ...flags) {
         try {
             Field propField = itemType.getDeclaredField(propertyName);
             propField.setAccessible(true);
@@ -128,12 +148,20 @@ public class TableItemModel<T> extends QAbstractTableModel {
             item.setWidth(width);
             item.setFunc(getter);
             item.setAlignment(alignment);
+            item.setFlags(flags != null && flags.length > 0 ? flags : null);
             namedFieldMap.put(propertyName,item);
             properties.add(propertyName);
             endInsertColumns();
         } catch (Exception e) {
             logger.error("failed to resolve field :" + propertyName + " on item " + itemType.getName(),e);
         }
+    }
+
+    public void setOnItemChanged(String propertyName, ItemEditedListener<T> listener) {
+        if (!properties.contains(propertyName)) {
+            return;
+        }
+        namedListenerMap.put(propertyName,listener);
     }
 
     public void removeColumn(String propertyName) {
@@ -177,6 +205,20 @@ public class TableItemModel<T> extends QAbstractTableModel {
             return new QVariant(field.getAlignment());
         }
         return new QVariant();
+    }
+
+    @Override
+    public boolean setData(@NonNull QModelIndex index, Object value, int role) {
+        if (index == null || !index.isValid()) {
+            return super.setData(index, value, role);
+        }
+        int col = index.column();
+        String propName = properties.get(col);
+        if (namedListenerMap.containsKey(propName)) {
+            ItemEditedListener<T> listener = namedListenerMap.get(propName);
+            listener.changed(items.get(index.row()),value,index,propName);
+        }
+        return super.setData(index, value, role);
     }
 
     @Override
@@ -226,4 +268,16 @@ public class TableItemModel<T> extends QAbstractTableModel {
         return Collections.unmodifiableList(items);
     }
 
+    @Override
+    public Qt.ItemFlags flags(QModelIndex index) {
+        if (index == null || !index.isValid() || index.column() > properties.size()) {
+            return super.flags(index);
+        }
+        String fieldName = properties.get(index.column());
+        if (!namedFieldMap.containsKey(fieldName)) {
+            return super.flags(index);
+        }
+        ColumnItem item = this.namedFieldMap.get(fieldName);
+        return item.flags != null ? item.flags : super.flags(index);
+    }
 }

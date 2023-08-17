@@ -46,6 +46,7 @@ public class QtViewManager extends AbstractDependencyScope {
 
         QtResource resource = context.getByClass(QtResource.class);
         ApplicationConfigure configure = context.getByClass(resource.getConfigureClass());
+        Theme theme = Theme.getTheme(configure.getTheme(),resource.getAssetFolder());
 
         QApplication.setWindowIcon(resource.getAppIcon());
 
@@ -61,7 +62,6 @@ public class QtViewManager extends AbstractDependencyScope {
                 widget.setMaximumSize(view.width(),view.height());
             }
         }
-        Theme theme = Theme.getTheme(configure.getTheme(),resource.getAssetFolder());
         theme.applyWithView(instance);
         instance.setContext(context);
         instance.setThemePalette(theme.getPalette());

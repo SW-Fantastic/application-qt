@@ -86,9 +86,9 @@ public class Theme {
                             logger.error("can not load font: " + file.toPath());
                         } else {
                             QList<String> families = QFontDatabase.applicationFontFamilies(loadedId);
-                            StringBuilder sb = new StringBuilder("family of file :").append(file.getName());
+                            StringBuilder sb = new StringBuilder("family of file : ").append(file.getName());
                             for (String family: families) {
-                                sb.append(family).append(",");
+                                sb.append(" ").append(family).append(",");
                             }
                             sb.append(" has loaded.");
                             logger.info(" font :" + sb);
@@ -166,6 +166,7 @@ public class Theme {
             return themes.get(name);
         }
         Theme theme = new Theme(name,assets);
+        theme.prepare();
         themes.put(name,theme);
         return theme;
     }
