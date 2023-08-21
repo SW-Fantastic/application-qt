@@ -1,6 +1,7 @@
 package org.swdc.qt.config;
 
-import org.swdc.dependency.utils.AnnotationDescription;
+
+import org.swdc.ours.common.annotations.AnnotationDescription;
 
 import java.lang.reflect.Field;
 

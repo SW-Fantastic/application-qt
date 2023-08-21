@@ -1,6 +1,5 @@
 package org.swdc.qt;
 
-import io.qt.core.QObject;
 import io.qt.gui.QIcon;
 import io.qt.gui.QImage;
 import io.qt.gui.QPixmap;
@@ -13,8 +12,9 @@ import org.swdc.dependency.DependencyContext;
 import org.swdc.dependency.EnvironmentLoader;
 import org.swdc.dependency.LoggerProvider;
 import org.swdc.dependency.application.SWApplication;
-import org.swdc.dependency.utils.AnnotationDescription;
-import org.swdc.dependency.utils.AnnotationUtil;
+import org.swdc.ours.common.annotations.AnnotationDescription;
+import org.swdc.ours.common.annotations.AnnotationDescriptions;
+import org.swdc.ours.common.annotations.Annotations;
 import org.swdc.qt.config.ApplicationConfigure;
 import org.swdc.qt.utils.IOApplicationUtils;
 import org.swdc.qt.utils.QtThreadPoolExecutor;
@@ -153,8 +153,8 @@ public class QtApplication implements SWApplication {
 
     private void initializeResources(String[] args, AnnotationLoader loader) {
 
-        Map<Class, AnnotationDescription> annotations = AnnotationUtil.getAnnotations(this.getClass());
-        AnnotationDescription appDesc = AnnotationUtil.findAnnotationIn(annotations,SWQtApplication.class);
+        AnnotationDescriptions annotations = Annotations.getAnnotations(this.getClass());
+        AnnotationDescription appDesc = Annotations.findAnnotationIn(annotations,SWQtApplication.class);
         if (appDesc == null) {
             logger.error("Application must annotated with SWQtApplication annotation, and configured well, start failed.");
             this.stop(true);

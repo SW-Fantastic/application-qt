@@ -4,6 +4,7 @@ import io.qt.core.QMetaObject;
 import io.qt.core.QObject;
 import io.qt.core.Qt;
 import org.swdc.dependency.utils.ReflectionUtil;
+import org.swdc.ours.common.type.ClassTypeAndMethods;
 
 import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.Method;
@@ -42,7 +43,7 @@ public interface SignalSupport {
     }
 
     default String slotMethod(Object receiver, String methodName) {
-        List<Method> methods = ReflectionUtil.findAllMethods(receiver.getClass());
+        List<Method> methods = ClassTypeAndMethods.findAllMethods(receiver.getClass());
         for(Method method: methods) {
             if (method.getName().equals(methodName)) {
                 return slotMethod(method);
@@ -105,7 +106,7 @@ public interface SignalSupport {
     }
 
     default  <T extends QMetaObject.AbstractSlot> void  doSignalConnect(Object receiver, QMetaObject.AbstractSignal signal, T slot, Qt.ConnectionType connectionType) {
-        SerializedLambda lambda = ReflectionUtil.extractSerializedLambda(slot);
+        SerializedLambda lambda = ClassTypeAndMethods.extractSerializedLambda(slot);
         if (lambda == null) {
             throw new RuntimeException("it is not a serialized lambda");
         }
@@ -116,7 +117,7 @@ public interface SignalSupport {
 
         String theMethod = lambda.getImplMethodName();
         Method implMethod = null;
-        List<Method> methods = ReflectionUtil.findAllMethods(receiver.getClass());
+        List<Method> methods = ClassTypeAndMethods.findAllMethods(receiver.getClass());
         for (Method method : methods) {
             if (method.getName().equals(theMethod)) {
                 implMethod = method;

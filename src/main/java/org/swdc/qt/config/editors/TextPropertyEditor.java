@@ -4,7 +4,7 @@ import io.qt.widgets.QHBoxLayout;
 import io.qt.widgets.QLabel;
 import io.qt.widgets.QLineEdit;
 import io.qt.widgets.QWidget;
-import org.swdc.config.Converter;
+import org.swdc.ours.common.type.Converter;
 import org.swdc.qt.QtResource;
 import org.swdc.qt.config.PropertyEditorView;
 import org.swdc.qt.config.PropertyItem;

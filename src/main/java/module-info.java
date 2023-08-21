@@ -1,5 +1,7 @@
 module swdc.application.qt {
 
+    requires swdc.commons;
+
     requires jakarta.inject;
     requires lesscss.engine;
     requires org.slf4j;

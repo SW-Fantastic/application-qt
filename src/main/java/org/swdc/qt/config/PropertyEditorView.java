@@ -1,9 +1,10 @@
 package org.swdc.qt.config;
 
 import io.qt.widgets.QWidget;
-import org.swdc.config.Converter;
-import org.swdc.config.converters.Converters;
 import org.swdc.dependency.utils.ReflectionUtil;
+import org.swdc.ours.common.type.ClassTypeAndMethods;
+import org.swdc.ours.common.type.Converter;
+import org.swdc.ours.common.type.Converters;
 import org.swdc.qt.QtResource;
 
 import java.lang.reflect.Field;
@@ -28,7 +29,7 @@ public abstract class PropertyEditorView {
     public <T> T getValue() {
         try {
             Field field = item.getPropertyField();
-            Method getter = ReflectionUtil.extractGetter(field);
+            Method getter = ClassTypeAndMethods.extractGetter(field);
             if (getter == null) {
                 throw new RuntimeException("missing field getter: " + field.getName());
             }
@@ -41,7 +42,7 @@ public abstract class PropertyEditorView {
     public void setValue(Object value) {
         try {
             Field field = item.getPropertyField();
-            Method setter = ReflectionUtil.extractSetter(field);
+            Method setter = ClassTypeAndMethods.extractSetter(field);
             if (setter == null) {
                 throw new RuntimeException("missing field setter: " + field.getName());
             }

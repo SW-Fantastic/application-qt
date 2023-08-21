@@ -9,14 +9,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.swdc.dependency.DependencyContext;
 import org.swdc.dependency.EventEmitter;
-import org.swdc.dependency.event.Events;
-import org.swdc.dependency.utils.AnnotationDescription;
-import org.swdc.dependency.utils.AnnotationUtil;
 import org.swdc.dependency.utils.ReflectionUtil;
+import org.swdc.ours.common.annotations.AnnotationDescription;
+import org.swdc.ours.common.annotations.Annotations;
+import org.swdc.ours.common.type.ClassTypeAndMethods;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
 import java.util.List;
 
 public interface AbstractQtView extends SignalSupport, EventEmitter {
@@ -30,9 +29,9 @@ public interface AbstractQtView extends SignalSupport, EventEmitter {
     void setThemePalette(QPalette palette);
 
     default void initializeController(Object controller) {
-        List<Method> methods = ReflectionUtil.findAllMethods(controller.getClass());
+        List<Method> methods = ClassTypeAndMethods.findAllMethods(controller.getClass());
         for (Method method : methods) {
-            AnnotationDescription desc = AnnotationUtil.findAnnotation(method,SignalConnect.class);
+            AnnotationDescription desc = Annotations.findAnnotation(method,SignalConnect.class);
             if (desc == null) {
                 continue;
             }
@@ -60,10 +59,10 @@ public interface AbstractQtView extends SignalSupport, EventEmitter {
             }
         }
 
-        List<Field> fields = ReflectionUtil.findFieldsByAnnotation(controller.getClass(),QtNamedWidget.class);
+        List<Field> fields = Annotations.findFieldsByAnnotation(controller.getClass(),QtNamedWidget.class);
         for (Field field: fields) {
             try {
-                AnnotationDescription desc = AnnotationUtil.findAnnotation(field,QtNamedWidget.class);
+                AnnotationDescription desc = Annotations.findAnnotation(field,QtNamedWidget.class);
                 String widgetName = desc.getProperty(String.class,"value");
                 if (widgetName.isEmpty()) {
                     widgetName = field.getName();

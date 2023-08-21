@@ -6,8 +6,8 @@ import io.qt.widgets.QVBoxLayout;
 import io.qt.widgets.QWidget;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.swdc.dependency.utils.AnnotationDescription;
-import org.swdc.dependency.utils.AnnotationUtil;
+import org.swdc.ours.common.annotations.AnnotationDescription;
+import org.swdc.ours.common.annotations.Annotations;
 import org.swdc.qt.QtResource;
 
 import java.lang.reflect.Constructor;
@@ -21,12 +21,12 @@ public class ConfigureViews {
     public static List<PropertyItem> parseConfigure(Object theConfigure) {
         List<PropertyItem> parsed = new ArrayList<>();
         Class type = theConfigure.getClass();
-        List<Field> properties = AnnotationUtil.getAnnotationField(
+        List<Field> properties = Annotations.getAnnotationField(
                 type,
                 PropEditor.class
         );
         for (Field field: properties) {
-            AnnotationDescription desc = AnnotationUtil.findAnnotation(field,PropEditor.class);
+            AnnotationDescription desc = Annotations.findAnnotation(field,PropEditor.class);
             PropertyItem item = new PropertyItem(desc,field);
             parsed.add(item);
         }

@@ -4,13 +4,9 @@ import io.qt.NonNull;
 import io.qt.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.swdc.dependency.utils.AnnotationDescription;
-import org.swdc.dependency.utils.AnnotationUtil;
-import org.swdc.dependency.utils.ReflectionUtil;
 
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 public class TableItemModel<T> extends QAbstractTableModel {
