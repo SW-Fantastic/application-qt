@@ -22,3 +22,8 @@ Windows，其他系统在必要的时候或者作者经济宽松的时候也会�
 不需要经过uic编译为源代码。
 
 目前只有QtCore、QtUITool、QtWidget、QtGui四个基础模块的支持。
+
+引入此项目后需要从Release下载Qt的Native lib，它是一个7z文件，
+使用本项目需要把此文件放在Java的Working Dir（通常是项目的根目录）中，
+它会在启动的时候被自动解压。
+

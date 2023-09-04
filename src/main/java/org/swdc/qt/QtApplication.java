@@ -12,6 +12,7 @@ import org.swdc.dependency.DependencyContext;
 import org.swdc.dependency.EnvironmentLoader;
 import org.swdc.dependency.LoggerProvider;
 import org.swdc.dependency.application.SWApplication;
+import org.swdc.ours.common.PackageResources;
 import org.swdc.ours.common.annotations.AnnotationDescription;
 import org.swdc.ours.common.annotations.AnnotationDescriptions;
 import org.swdc.ours.common.annotations.Annotations;
@@ -85,6 +86,7 @@ public class QtApplication implements SWApplication {
         System.setProperty("io.qt.pluginpath",nativePath);
 
         File nativeFolder = new File(nativePath);
+        File parentFolder = nativeFolder.getAbsoluteFile().getParentFile();
         if (!nativeFolder.exists()) {
 
             if(!nativeFolder.mkdirs()) {
@@ -95,20 +97,24 @@ public class QtApplication implements SWApplication {
 
             logger.info("no qt library found, will extract from resource.");
             if (osName.contains("windows")) {
-                resourceName = resourceName + "windows";
+                resourceName =  "windows";
             } else if (osName.contains("linux")) {
-                resourceName = resourceName + "linux";
+                resourceName = "linux";
             } else if (osName.contains("mac")) {
-                resourceName = resourceName + "macos";
+                resourceName =  "macos";
             }
             String osArch = System.getProperty("os.arch");
             List<String> arch64 = Arrays.asList("x64","amd64","x86_64");
             if (arch64.contains(osArch.toLowerCase())) {
                 osArch = "x64";
             }
-            //resourceName = resourceName + "-" + osArch + ".zip";
-            for (String libs: Arrays.asList("QtCore","QtMultimedia","QtPlugins","QtLibCore","QtLibExt")) {
-                doExtractZip(nativeFolder,resourceName + "/" + libs + "-" + osArch + ".zip");
+            File archived = new File(parentFolder.getAbsolutePath() + File.separator + "qt-" + resourceName + "-" + osArch + ".7z");
+            if (archived.exists()) {
+                logger.info("extracting native libs....");
+                PackageResources.extract7ZipFromFile(archived,nativeFolder);
+            } else {
+                logger.error("no native library found, please download from the release page of this project.");
+                stop(true);
             }
         }
 

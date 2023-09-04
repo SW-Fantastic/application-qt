@@ -11,8 +11,6 @@ module swdc.application.qt {
 
     requires qtjambi;
     requires qtjambi.uitools;
-    requires qtjambi.opengl;
-    requires qtjambi.openglwidgets;
 
     exports org.swdc.qt;
     exports org.swdc.qt.view;
