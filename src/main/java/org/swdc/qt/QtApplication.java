@@ -64,12 +64,12 @@ public class QtApplication implements SWApplication {
 
         logger.info("application is initializing...");
 
-        this.onConfig(loader);
     }
 
-    private void prepareNativeEnvironment() {
+    private void prepareNativeEnvironment(File baseDir) {
         String osName = System.getProperty("os.name").trim().toLowerCase();
-        String nativePath = "platforms";
+        String nativePath =baseDir.getAbsolutePath() + File.separator +
+                "platform" + File.separator + "Qt";
         if (osName.contains("mac")) {
             String url = this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile();
             String base = URLDecoder.decode(url, StandardCharsets.UTF_8);
@@ -93,7 +93,7 @@ public class QtApplication implements SWApplication {
                 throw new RuntimeException("can not create platform folder, start failed.");
             }
 
-            String resourceName = "platforms/";
+            String resourceName = "";
 
             logger.info("no qt library found, will extract from resource.");
             if (osName.contains("windows")) {
@@ -102,13 +102,15 @@ public class QtApplication implements SWApplication {
                 resourceName = "linux";
             } else if (osName.contains("mac")) {
                 resourceName =  "macos";
+            } else {
+                logger.error("failed to prepare Qt environment, your system is not supported.");
             }
             String osArch = System.getProperty("os.arch");
             List<String> arch64 = Arrays.asList("x64","amd64","x86_64");
             if (arch64.contains(osArch.toLowerCase())) {
                 osArch = "x64";
             }
-            File archived = new File(parentFolder.getAbsolutePath() + File.separator + "qt-" + resourceName + "-" + osArch + ".7z");
+            File archived = new File(baseDir.getAbsolutePath() + File.separator + "qt-" + resourceName + "-" + osArch + ".7z");
             if (archived.exists()) {
                 logger.info("extracting native libs....");
                 PackageResources.extract7ZipFromFile(archived,nativeFolder);
@@ -118,43 +120,6 @@ public class QtApplication implements SWApplication {
             }
         }
 
-    }
-
-    private void doExtractZip(File nativeFolder, String resourceName) {
-        try {
-            InputStream binaryInput = QtApplication.class.getModule()
-                    .getResourceAsStream(resourceName);
-            if (binaryInput == null) {
-                logger.error("failed to load qt native library for your system :" + resourceName + ", start failed");
-                this.stop(true);
-                return;
-            }
-            ZipInputStream zin = new ZipInputStream(binaryInput);
-            ZipEntry entry = null;
-            Path basePath = nativeFolder.toPath();
-            if (!Files.exists(basePath)) {
-                Files.createDirectories(basePath);
-            }
-            while ((entry = zin.getNextEntry()) != null) {
-                if (entry.isDirectory()) {
-                    continue;
-                }
-                Path filePath = basePath.resolve(entry.getName());
-                Path folder = filePath.getParent();
-                if (!Files.exists(folder)) {
-                    Files.createDirectories(folder);
-                }
-                OutputStream os = Files.newOutputStream(filePath);
-                zin.transferTo(os);
-                os.close();
-                logger.info("extracting native library: " + filePath);
-            }
-            zin.close();
-            binaryInput.close();
-        } catch (Exception e) {
-            logger.error("error on extracting native library",e);
-            this.stop(true);
-        }
     }
 
     private void initializeResources(String[] args, AnnotationLoader loader) {
@@ -211,7 +176,7 @@ public class QtApplication implements SWApplication {
             }
         }
 
-        this.prepareNativeEnvironment();
+        this.prepareNativeEnvironment(file);
 
         logger.info("Qt environment is loading...");
         QApplication.initialize(args);
@@ -253,12 +218,18 @@ public class QtApplication implements SWApplication {
         loader.withInstance(ExecutorService.class,executor);
         loader.withProvider(LoggerProvider.class);
 
+        this.onConfig(loader);
+
         logger.info("resource has loaded.");
+    }
+
+    public void onConfig(EnvironmentLoader loader, QtResource resource) {
+
     }
 
     @Override
     public void onConfig(EnvironmentLoader loader) {
-
+        this.onConfig(loader,resource);
     }
 
     @Override
