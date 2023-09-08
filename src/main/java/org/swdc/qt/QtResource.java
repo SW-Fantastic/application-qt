@@ -7,12 +7,14 @@ import org.swdc.qt.utils.QtThreadPoolExecutor;
 
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.AbstractExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
 
 public class QtResource {
 
     private File assetFolder;
 
-    private QtThreadPoolExecutor executor;
+    private AbstractExecutorService executor;
 
     private QIcon appIcon;
 
@@ -40,7 +42,7 @@ public class QtResource {
         this.assetFolder = assetFolder;
     }
 
-    public void setExecutor(QtThreadPoolExecutor executor) {
+    public void setExecutor(AbstractExecutorService executor) {
         this.executor = executor;
     }
 
@@ -48,7 +50,7 @@ public class QtResource {
         return assetFolder;
     }
 
-    public QtThreadPoolExecutor getExecutor() {
+    public AbstractExecutorService getExecutor() {
         return executor;
     }
 

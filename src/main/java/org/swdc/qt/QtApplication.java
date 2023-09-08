@@ -30,10 +30,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -44,7 +41,7 @@ public class QtApplication implements SWApplication {
     private QtResource resource = new QtResource();
     private boolean isNativeInitialized = false;
 
-    private QtThreadPoolExecutor executor;
+    private AbstractExecutorService executor;
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -182,8 +179,12 @@ public class QtApplication implements SWApplication {
         QApplication.initialize(args);
         isNativeInitialized = true;
 
-        this.executor =  new QtThreadPoolExecutor();
-        resource.setExecutor(executor);
+        //this.executor =  new QtThreadPoolExecutor();
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(
+                2,4,10, TimeUnit.MINUTES,new LinkedBlockingQueue<>()
+        );
+        this.executor = executor;
+        resource.setExecutor(this.executor);
 
         String[] icons = appDesc.getProperty(String[].class, "icons");
         QIcon theIcon = new QIcon();
@@ -245,6 +246,7 @@ public class QtApplication implements SWApplication {
     private void stop(boolean focus) {
         logger.info("application is closing...");
         try {
+            this.onShutdown(context);
             if (context != null && AutoCloseable.class.isAssignableFrom(context.getClass())) {
                 AutoCloseable closeable = (AutoCloseable) context;
                 closeable.close();
