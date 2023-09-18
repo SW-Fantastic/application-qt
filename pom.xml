@@ -6,7 +6,7 @@
 
     <groupId>org.swdc</groupId>
     <artifactId>application-qt</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
 
     <properties>
         <encoding>UTF-8</encoding>
@@ -20,7 +20,7 @@
         <dependency>
             <groupId>org.swdc</groupId>
             <artifactId>application-component</artifactId>
-            <version>1.3-SNAPSHOT</version>
+            <version>1.3</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
