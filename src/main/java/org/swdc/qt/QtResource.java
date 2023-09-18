@@ -5,7 +5,9 @@ import io.qt.gui.QIcon;
 import org.swdc.qt.config.ApplicationConfigure;
 import org.swdc.qt.utils.QtThreadPoolExecutor;
 
+import javax.swing.*;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.AbstractExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -21,6 +23,8 @@ public class QtResource {
     private Class<ApplicationConfigure> configureClass;
 
     private List<String> args;
+
+    private List<ImageIcon> appImageIcons = new ArrayList<>();
 
     public Class<ApplicationConfigure> getConfigureClass() {
         return configureClass;
@@ -62,5 +66,11 @@ public class QtResource {
         return args;
     }
 
+    public void setAppImageIcons(List<ImageIcon> appImageIcons) {
+        this.appImageIcons = appImageIcons;
+    }
 
+    public List<ImageIcon> getAppImageIcons() {
+        return appImageIcons;
+    }
 }

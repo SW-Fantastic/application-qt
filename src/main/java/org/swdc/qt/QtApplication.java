@@ -1,5 +1,6 @@
 package org.swdc.qt;
 
+import io.qt.gui.QFont;
 import io.qt.gui.QIcon;
 import io.qt.gui.QImage;
 import io.qt.gui.QPixmap;
@@ -19,7 +20,12 @@ import org.swdc.ours.common.annotations.Annotations;
 import org.swdc.qt.config.ApplicationConfigure;
 import org.swdc.qt.utils.IOApplicationUtils;
 import org.swdc.qt.utils.QtThreadPoolExecutor;
+import org.swdc.qt.view.Splash;
+import org.swdc.qt.view.Theme;
 
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -27,6 +33,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +51,8 @@ public class QtApplication implements SWApplication {
     private AbstractExecutorService executor;
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    private Splash splash;
 
     private void prepareApplication(AnnotationLoader loader) {
         try {
@@ -83,7 +92,6 @@ public class QtApplication implements SWApplication {
         System.setProperty("io.qt.pluginpath",nativePath);
 
         File nativeFolder = new File(nativePath);
-        File parentFolder = nativeFolder.getAbsoluteFile().getParentFile();
         if (!nativeFolder.exists()) {
 
             if(!nativeFolder.mkdirs()) {
@@ -130,6 +138,7 @@ public class QtApplication implements SWApplication {
         }
 
 
+
         Class[] configures = appDesc.getProperty(Class[].class,"configures");
         for (Class confClazz : configures) {
             if (ApplicationConfigure.class.isAssignableFrom(confClazz)) {
@@ -173,7 +182,21 @@ public class QtApplication implements SWApplication {
             }
         }
 
+        Class<Splash> splashClass = appDesc.getProperty(Class.class,"splash");
+        if (!splashClass.equals(Splash.class)) {
+            try {
+                splash = splashClass.getConstructor(File.class)
+                        .newInstance(file);
+                splash.show();
+            } catch (Exception e) {
+                logger.error("failed to load splash",e);
+                this.stop(true);
+                return;
+            }
+        }
+
         this.prepareNativeEnvironment(file);
+
 
         logger.info("Qt environment is loading...");
         QApplication.initialize(args);
@@ -188,6 +211,7 @@ public class QtApplication implements SWApplication {
 
         String[] icons = appDesc.getProperty(String[].class, "icons");
         QIcon theIcon = new QIcon();
+        List<ImageIcon> imageIcons = new ArrayList<>();
         for (String icon : icons) {
             try {
                 InputStream in = getClass().getModule().getResourceAsStream(icon);
@@ -195,6 +219,8 @@ public class QtApplication implements SWApplication {
                     byte[] data = in.readAllBytes();
                     QImage image = QImage.fromData(data);
                     theIcon.addPixmap(QPixmap.fromImage(image));
+                    ImageIcon swIcon = new ImageIcon(ImageIO.read(new ByteArrayInputStream(data)));
+                    imageIcons.add(swIcon);
                     in.close();
                 }
             } catch (Exception e) {
@@ -212,6 +238,7 @@ public class QtApplication implements SWApplication {
         logger.info("using asset folder: " + assetFolderPath);
 
         resource.setAssetFolder(file);
+        resource.setAppImageIcons(imageIcons);
         resource.setAppIcon(theIcon);
         resource.setArgs(Arrays.asList(args));
 
@@ -220,6 +247,7 @@ public class QtApplication implements SWApplication {
         loader.withProvider(LoggerProvider.class);
 
         this.onConfig(loader);
+
 
         logger.info("resource has loaded.");
     }
@@ -273,11 +301,21 @@ public class QtApplication implements SWApplication {
         this.initializeResources(args,loader);
         context = loader.load();
         logger.info("application is started.");
+        Theme theme = Theme.getTheme(
+                context.getByClass(resource.getConfigureClass())
+                        .getTheme(), resource.getAssetFolder()
+        );
+        theme.applyWith(QApplication.instance());
 
         QApplication.setWindowIcon(resource.getAppIcon());
-        QApplication.instance().aboutToQuit.connect(() -> this.stop(false));
-
+        QApplication.instance().aboutToQuit.connect(() -> {
+            this.stop(false);
+            System.exit(0);
+        });
         this.onStarted(context);
+        if (splash != null) {
+            splash.hide();
+        }
         QApplication.exec();
 
     }

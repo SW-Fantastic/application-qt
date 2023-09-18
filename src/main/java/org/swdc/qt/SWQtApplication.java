@@ -1,5 +1,7 @@
 package org.swdc.qt;
 
+import org.swdc.qt.view.Splash;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -14,5 +16,7 @@ public @interface SWQtApplication {
     Class[] configures();
 
     String assetsFolder() default "assets";
+
+    Class<? extends Splash> splash() default Splash.class;
 
 }

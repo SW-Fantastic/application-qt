@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -105,11 +106,7 @@ public class Theme {
         }
     }
 
-    /**
-     * 给view添加样式
-     * @param view
-     */
-    public void applyWithView(AbstractQtView view) {
+    private String initStyleTexts() throws IOException {
         if (!this.ready) {
             this.prepare();
         }
@@ -119,38 +116,84 @@ public class Theme {
                 .resolve(this.name)
                 .toFile();
 
+        if (styleTexts == null) {
+            Path defaultStyle = skinAssets
+                    .toPath()
+                    .resolve("stage.css")
+                    .toAbsolutePath();
+            byte[] data = Files.readAllBytes(defaultStyle);
+            styleTexts = new String(data, StandardCharsets.UTF_8);
+        }
+        return styleTexts;
+    }
+
+    private QPalette initPalette() throws IOException {
+        if (!this.ready) {
+            this.prepare();
+        }
+
+        File skinAssets = assetsRoot.toPath()
+                .resolve("skin")
+                .resolve(this.name)
+                .toFile();
+
+        if (palette == null) {
+            palette = new QPalette();
+            Path colorSchema = skinAssets.toPath()
+                    .resolve("colors.properties")
+                    .toAbsolutePath();
+
+            if (Files.exists(colorSchema)) {
+                Properties properties = new Properties();
+                InputStream in = Files.newInputStream(colorSchema);
+                properties.load(in);
+                in.close();
+
+                for (String key: properties.stringPropertyNames()) {
+                    try {
+                        QPalette.ColorRole role = QPalette.ColorRole.valueOf(key);
+                        QColor color = fromString(properties.getProperty(key));
+                        palette.setBrush(role, new QBrush(color));
+                    } catch (Exception e) {
+                        // ignore
+                    }
+                }
+            }
+        }
+        return palette;
+    }
+
+    public void applyWith(QApplication application) {
+        if (!this.ready) {
+            this.prepare();
+        }
+
         try {
             if (styleTexts == null) {
-                Path defaultStyle = skinAssets
-                        .toPath()
-                        .resolve("stage.css")
-                        .toAbsolutePath();
-                byte[] data = Files.readAllBytes(defaultStyle);
-                styleTexts = new String(data, StandardCharsets.UTF_8);
+                styleTexts = initStyleTexts();
+            }
+            application.setStyleSheet(styleTexts);
+        } catch (Exception e){
+            throw new RuntimeException("渲染出现异常：",e);
+        }
+    }
+
+    /**
+     * 给view添加样式
+     * @param view
+     */
+    public void applyWithView(AbstractQtView view) {
+        if (!this.ready) {
+            this.prepare();
+        }
+
+        try {
+            if (styleTexts == null) {
+                styleTexts = initStyleTexts();
             }
 
             if (palette == null) {
-                palette = new QPalette();
-                Path colorSchema = skinAssets.toPath()
-                        .resolve("colors.properties")
-                        .toAbsolutePath();
-
-                if (Files.exists(colorSchema)) {
-                    Properties properties = new Properties();
-                    InputStream in = Files.newInputStream(colorSchema);
-                    properties.load(in);
-                    in.close();
-
-                    for (String key: properties.stringPropertyNames()) {
-                        try {
-                            QPalette.ColorRole role = QPalette.ColorRole.valueOf(key);
-                            QColor color = fromString(properties.getProperty(key));
-                            palette.setBrush(role, new QBrush(color));
-                        } catch (Exception e) {
-                            // ignore
-                        }
-                    }
-                }
+                palette = initPalette();
             }
 
             QWidget widget = (QWidget)view;
