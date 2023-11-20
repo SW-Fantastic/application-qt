@@ -26,7 +26,7 @@
         <dependency>
             <groupId>org.swdc</groupId>
             <artifactId>application-configure</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.0</version>
             <scope>compile</scope>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.asual.lesscss/lesscss-engine -->
